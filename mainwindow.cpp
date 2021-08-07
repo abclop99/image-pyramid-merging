@@ -12,7 +12,8 @@ using namespace cv;
 // declare functions
 void displayImage(QLabel *label, Mat img);
 void laplacianPyr(const int layers, Mat pyr[], const Mat image);
-void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat combinedPyr[]);
+void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat combinedPyr[],
+                     const int maskStartPercent=40, const int maskEndPercent=60);
 void reconstructImage(const int layers, const Mat pyr[], Mat &dst);
 
 MainWindow::MainWindow(QWidget *parent)
@@ -23,23 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWindowTitle("Merging 2 images using Laplacian Pyramids");
 
-    // total layers, including the original size
-    const int layers = 4;
-
     const std::string image1Path = "C:/Users/abclo/Documents/Projects/image-pyramids/apple.jpg";
     const std::string image2Path = "C:/Users/abclo/Documents/Projects/image-pyramids/orange.jpg";
-
-    // Images
-    Mat image1;
-    Mat image2;
-
-    // image pyramids
-    Mat image1Pyr[layers];
-    Mat image2Pyr[layers];
-    Mat combinedPyr[layers];
-
-    // reconstructed image
-    Mat reconstruction;
 
     // read in the images
     image1 = imread(image1Path, IMREAD_COLOR);
@@ -49,22 +35,40 @@ MainWindow::MainWindow(QWidget *parent)
     laplacianPyr(layers, image1Pyr, image1);
     laplacianPyr(layers, image2Pyr, image2);
 
-    // combine laplacian pyramids
-    combinePyramids(layers, image1Pyr, image2Pyr, combinedPyr);
+    // Combine the images
+    combineImages();
 
-    // reconstruct image
-    reconstructImage(layers, combinedPyr, reconstruction);
-
-    // display images
-    displayImage(ui->image1Label, image1);
-    displayImage(ui->image2Label, image2);
-    displayImage(ui->reconstructionLabel, reconstruction);
+    // Connect slider changing values to recombining the images
+    connect(ui->startSlider, SIGNAL(valueChanged(int)), this, SLOT(combineImages()));
+    connect(ui->endSlider, SIGNAL(valueChanged(int)), this, SLOT(combineImages()));
 
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+/**
+ * Combines the images from the already generated Laplacian pyramids.
+ */
+void MainWindow::combineImages() {
+
+    combinePyramids(layers, image1Pyr, image2Pyr, combinedPyr, ui->startSlider->value(), ui->endSlider->value());
+
+    reconstructImage(layers, combinedPyr, reconstruction);
+
+    displayImages();
+
+}
+
+/**
+ * Displays the images in the UI
+ */
+void MainWindow::displayImages() {
+    displayImage(ui->image1Label, image1);
+    displayImage(ui->image2Label, image2);
+    displayImage(ui->reconstructionLabel, reconstruction);
 }
 
 /**
@@ -129,7 +133,7 @@ void imageMask(Mat &mask, int rows, int cols, int start, int end) {
         rectangle(mask, Point(end, 0), Point(cols-1, rows-1), 0.0, FILLED);
 
         // generate gradient between start and end cols
-        for (int col = start; col <= end; col++) {
+        for (int col = start; col < end; col++) {
 
             // linear gradient between start and end
             float value = (float)(end - col) / (end - start);
@@ -137,7 +141,6 @@ void imageMask(Mat &mask, int rows, int cols, int start, int end) {
         }
 
     }
-
 
 }
 
@@ -188,11 +191,15 @@ void addMaskedLaplacian(const Mat left, const Mat right, const Mat leftMask, Mat
 /**
  * Combines two image pyramids (currently by splicing together in the middle, change later)
  */
-void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat combinedPyr[]) {
+void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat combinedPyr[],
+                     const int maskStartPercent, const int maskEndPercent) {
 
     Mat leftMask;
 
-    imageMask(leftMask, leftPyr[0].rows, leftPyr[0].cols, 200, 312);
+    int maskStart   = leftPyr[0].cols * maskStartPercent / 100;
+    int maskEnd     = leftPyr[0].cols * maskEndPercent / 100;
+
+    imageMask(leftMask, leftPyr[0].rows, leftPyr[0].cols, maskStart, maskEnd);
 
     for (int layer = 0; layer < layers; layer++) {
 
@@ -222,3 +229,4 @@ void reconstructImage(const int layers, const Mat pyr[], Mat &dst) {
     }
 
 }
+
