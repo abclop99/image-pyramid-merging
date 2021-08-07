@@ -18,6 +18,15 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
+INCLUDEPATH += C:\tools\OpenCV-3.2.0\opencv\build\include
+
+LIBS += C:\tools\OpenCV-3.2.0\opencv-build\bin\libopencv_core320.dll
+LIBS += C:\tools\OpenCV-3.2.0\opencv-build\bin\libopencv_highgui320.dll
+LIBS += C:\tools\OpenCV-3.2.0\opencv-build\bin\libopencv_imgcodecs320.dll
+LIBS += C:\tools\OpenCV-3.2.0\opencv-build\bin\libopencv_imgproc320.dll
+LIBS += C:\tools\OpenCV-3.2.0\opencv-build\bin\libopencv_features2d320.dll
+LIBS += C:\tools\OpenCV-3.2.0\opencv-build\bin\libopencv_calib3d320.dll
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
