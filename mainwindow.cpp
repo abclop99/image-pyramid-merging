@@ -12,7 +12,8 @@ using namespace cv;
 // declare functions
 void displayImage(QLabel *label, Mat img);
 void laplacianPyr(const int layers, Mat pyr[], const Mat image);
-void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat outPyr[]);
+void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat combinedPyr[]);
+void reconstructImage(const int layers, const Mat pyr[], Mat &dst);
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -52,10 +53,12 @@ MainWindow::MainWindow(QWidget *parent)
     combinePyramids(layers, image1Pyr, image2Pyr, combinedPyr);
 
     // reconstruct image
+    reconstructImage(layers, combinedPyr, reconstruction);
 
     // display images
     displayImage(ui->image1Label, image1);
     displayImage(ui->image2Label, image2);
+    displayImage(ui->reconstructionLabel, reconstruction);
 
 }
 
@@ -189,7 +192,7 @@ void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[]
 
     Mat leftMask;
 
-    imageMask(leftMask, 512, 512, 200, 312);
+    imageMask(leftMask, leftPyr[0].rows, leftPyr[0].cols, 200, 312);
 
     for (int layer = 0; layer < layers; layer++) {
 
@@ -199,6 +202,23 @@ void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[]
         // Downsize mask to fit next layer
         pyrDown(leftMask, leftMask);
 
+    }
+
+}
+
+/**
+ * Reconstructs an image from a Laplacian pyramid.
+ */
+void reconstructImage(const int layers, const Mat pyr[], Mat &dst) {
+
+    // Start with smallest image (should be unsigned)
+    dst = pyr[layers-1].clone();
+
+    // From second smallest to largest images in pyramid
+    for (int layer = layers - 2; layer >= 0; layer--) {
+        //Upscale reconstruction and add previous layer
+        pyrUp(dst, dst);
+        add(dst, pyr[layer], dst, noArray(), dst.type());
     }
 
 }
