@@ -24,12 +24,25 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWindowTitle("Merging 2 images using Laplacian Pyramids");
 
-    const std::string image1Path = "C:/Users/abclo/Documents/Projects/image-pyramids/apple.jpg";
-    const std::string image2Path = "C:/Users/abclo/Documents/Projects/image-pyramids/orange.jpg";
+    const QString leftImagePath = ":/images/apple.jpg";
+    const QString rightImagePath = ":/images/orange.jpg";
 
-    // read in the images
-    image1 = imread(image1Path, IMREAD_COLOR);
-    image2 = imread(image2Path, IMREAD_COLOR);
+    // read in the images from resource
+    QFile leftFile(leftImagePath);
+    QFile rightFile(rightImagePath);
+
+    if (leftFile.open(QIODevice::ReadOnly)){
+        qint64 sz = leftFile.size();
+        std::vector<uchar> buf(sz);
+        leftFile.read((char*)buf.data(), sz);
+        leftImage = imdecode(buf, IMREAD_COLOR);
+    }
+    if (rightFile.open(QIODevice::ReadOnly)){
+        qint64 sz = rightFile.size();
+        std::vector<uchar> buf(sz);
+        rightFile.read((char*)buf.data(), sz);
+        rightImage = imdecode(buf, IMREAD_COLOR);
+    }
 
     // generate laplacian pyramids
     laplacianPyr(layers, image1Pyr, image1);

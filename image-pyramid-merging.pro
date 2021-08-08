@@ -31,3 +31,10 @@ LIBS += C:\tools\OpenCV-3.2.0\opencv-build\bin\libopencv_calib3d320.dll
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES += \
+    apple.jpg \
+    orange.jpg
+
+RESOURCES += \
+    resources.qrc
