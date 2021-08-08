@@ -33,11 +33,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->startSlider, SIGNAL(valueChanged(int)), this, SLOT(combineImages()));
     connect(ui->endSlider, SIGNAL(valueChanged(int)), this, SLOT(combineImages()));
 
-    // Connect file selection buttons
+    // Connect file selection UI to functionality
     connect(ui->leftFileButton, SIGNAL(clicked()), this, SLOT(handleLeftFileButton()));
     connect(ui->rightFileButton, SIGNAL(clicked()), this, SLOT(handleRightFileButton()));
     connect(ui->leftFileSubmit, SIGNAL(clicked()), this, SLOT(handleLeftFileSubmit()));
     connect(ui->rightFileSubmit, SIGNAL(clicked()), this, SLOT(handleRightFileSubmit()));
+    connect(ui->leftFileText, SIGNAL(returnPressed()), this, SLOT(handleLeftFileSubmit()));
+    connect(ui->rightFileText, SIGNAL(returnPressed()), this, SLOT(handleRightFileSubmit()));
 
 }
 
