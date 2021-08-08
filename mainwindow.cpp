@@ -1,20 +1,9 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+#include <QFile>
 
 #include <iostream>
 
 using namespace cv;
-
-// declare functions
-void displayImage(QLabel *label, Mat img);
-void laplacianPyr(const int layers, Mat pyr[], const Mat image);
-void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat combinedPyr[],
-                     const int maskStartPercent=40, const int maskEndPercent=60);
-void reconstructImage(const int layers, const Mat pyr[], Mat &dst);
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -27,26 +16,15 @@ MainWindow::MainWindow(QWidget *parent)
     const QString leftImagePath = ":/images/apple.jpg";
     const QString rightImagePath = ":/images/orange.jpg";
 
-    // read in the images from resource
-    QFile leftFile(leftImagePath);
-    QFile rightFile(rightImagePath);
+    ui->leftFIleText->setText(leftImagePath);
+    ui->rightFIleText->setText(rightImagePath);
 
-    if (leftFile.open(QIODevice::ReadOnly)){
-        qint64 sz = leftFile.size();
-        std::vector<uchar> buf(sz);
-        leftFile.read((char*)buf.data(), sz);
-        leftImage = imdecode(buf, IMREAD_COLOR);
-    }
-    if (rightFile.open(QIODevice::ReadOnly)){
-        qint64 sz = rightFile.size();
-        std::vector<uchar> buf(sz);
-        rightFile.read((char*)buf.data(), sz);
-        rightImage = imdecode(buf, IMREAD_COLOR);
-    }
+    loadImage(leftImage, leftImagePath);
+    loadImage(rightImage, rightImagePath);
 
     // generate laplacian pyramids
-    laplacianPyr(layers, image1Pyr, image1);
-    laplacianPyr(layers, image2Pyr, image2);
+    laplacianPyr(layers, leftPyr, leftImage);
+    laplacianPyr(layers, rightPyr, rightImage);
 
     // Combine the images
     combineImages();
@@ -63,11 +41,11 @@ MainWindow::~MainWindow()
 }
 
 /**
- * Combines the images from the already generated Laplacian pyramids.
+ * Combines the pyramids, then reconstructs an image
  */
 void MainWindow::combineImages() {
 
-    combinePyramids(layers, image1Pyr, image2Pyr, combinedPyr, ui->startSlider->value(), ui->endSlider->value());
+    combinePyramids(layers, leftPyr, rightPyr, combinedPyr, ui->startSlider->value(), ui->endSlider->value());
 
     reconstructImage(layers, combinedPyr, reconstruction);
 
@@ -79,15 +57,15 @@ void MainWindow::combineImages() {
  * Displays the images in the UI
  */
 void MainWindow::displayImages() {
-    displayImage(ui->image1Label, image1);
-    displayImage(ui->image2Label, image2);
+    displayImage(ui->leftImageLabel, leftImage);
+    displayImage(ui->rightImageLabel, rightImage);
     displayImage(ui->reconstructionLabel, reconstruction);
 }
 
 /**
  * Displays an opencv image in a QLabel.
  */
-void displayImage(QLabel *label, Mat img) {
+void MainWindow::displayImage(QLabel *label, Mat img) {
     Mat image;
     cv::cvtColor(img, image, CV_BGR2RGB);
     label->setPixmap(QPixmap::fromImage((QImage(image.data, image.cols, image.rows, image.step, QImage::Format_RGB888))));
@@ -97,7 +75,7 @@ void displayImage(QLabel *label, Mat img) {
  * Generate the laplacian pyramid for image with layer layers
  * and put in pyr
  */
-void laplacianPyr(const int layers, Mat pyr[], const Mat image) {
+void MainWindow::laplacianPyr(const int layers, Mat pyr[], const Mat image) {
 
     Mat upscaledImage;
     Mat tempLaplacian;
@@ -204,7 +182,7 @@ void addMaskedLaplacian(const Mat left, const Mat right, const Mat leftMask, Mat
 /**
  * Combines two image pyramids (currently by splicing together in the middle, change later)
  */
-void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat combinedPyr[],
+void MainWindow::combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat combinedPyr[],
                      const int maskStartPercent, const int maskEndPercent) {
 
     Mat leftMask;
@@ -229,7 +207,7 @@ void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[]
 /**
  * Reconstructs an image from a Laplacian pyramid.
  */
-void reconstructImage(const int layers, const Mat pyr[], Mat &dst) {
+void MainWindow::reconstructImage(const int layers, const Mat pyr[], Mat &dst) {
 
     // Start with smallest image (should be unsigned)
     dst = pyr[layers-1].clone();
