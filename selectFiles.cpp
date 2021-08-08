@@ -1,3 +1,8 @@
+#include "mainwindow.h"
+#include "QFileDialog"
+
+#include <iostream>
+
 /**
  * @brief MainWindow::handleLeftFileButton
  * Shows a file dialog to select an image attempts to load it as the left image.
@@ -39,39 +44,45 @@ void MainWindow::handleLeftFileSubmit() {
     // Read string from text line
     QString path = ui->leftFIleText->text();
 
-    // if path empty, error
-    if (path == emptyMsg) {
+    // Attempt loading an image, display error message if error
+    switch (loadImage(leftImage, path)) {
+    case 0:     // no error
+        break;
+    case 1:     // empty path
         setLeftErrorMessage(emptyPathMsg);
-        return;
-    }
-
-    // Read image s
-    cv::Mat image = cv::imread(path.toStdString(), cv::IMREAD_COLOR);
-
-    // Check if the image was read correctly
-    if (image.empty()) {
+        break;
+    case 2:     // Could not read file
         setLeftErrorMessage(imageInvalidMsg);
-        return;
+    default:    // unknown error
+        setLeftErrorMessage(unknownErrorMsg);
+        break;
     }
 
-    setLeftErrorMessage(emptyMsg);
-
-    // Set left image, resize if neccessary
-    if (image.rows == imageWidth && image.cols == imageHeight) {
-        leftImage = image.clone();
-    }
-    else {
-        cv::resize(image, leftImage, cv::Size(imageWidth, imageHeight), INTER_CUBIC);
-    }
-
+    // Do pyramid stuff again
     laplacianPyr(layers, leftPyr, leftImage);
     combineImages();
-
-
 
 }
 void MainWindow::handleRightFileSubmit() {
     QString path = ui->rightFIleText->text();
+
+    // Attempt loading an image, display error message if error
+    switch (loadImage(rightImage, path)) {
+    case 0:     // no error
+        break;
+    case 1:     // empty path
+        setRightErrorMessage(emptyPathMsg);
+        break;
+    case 2:     // Could not read file because it ended up empty
+        setRightErrorMessage(imageInvalidMsg);
+    default:    // Invalid image
+        setRightErrorMessage(imageInvalidMsg);
+        break;
+    }
+
+    // Do pyramid stuff again
+    laplacianPyr(layers, rightPyr, rightImage);
+    combineImages();
 }
 
 /**
@@ -90,3 +101,42 @@ void MainWindow::setRightErrorMessage(QString msg) {
     ui->rightErrorMessage->setText(msg);
 }
 
+/**
+ * @brief MainWindow::loadImage
+ * @param dst Mat to store the image in
+ * @param path filepath of the image
+ * @return 0 if no error, 1 for empty path, 2 for couldn't read image
+ */
+int MainWindow::loadImage(Mat &dst, QString path) {
+
+    if (path == emptyMsg) {
+        return 1;
+    }
+
+    // read in the images from resource
+    QFile file(path);
+
+    // Load image
+    Mat image;
+    if (file.open(QIODevice::ReadOnly)){
+        qint64 sz = file.size();
+        std::vector<uchar> buf(sz);
+        file.read((char*)buf.data(), sz);
+        image = imdecode(buf, IMREAD_COLOR);
+    }
+
+    // Check if image was read correctly (not empty)
+    if (image.empty()) {
+        return 2;
+    }
+
+    // Set dst image, resize if neccessary
+    if (image.rows == imageWidth && image.cols == imageHeight) {
+        dst = image.clone();
+    }
+    else {
+        cv::resize(image, dst, cv::Size(imageWidth, imageHeight), INTER_CUBIC);
+    }
+
+    return 0;
+}

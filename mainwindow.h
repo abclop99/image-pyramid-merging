@@ -28,10 +28,20 @@ public:
 private slots:
     void combineImages();
 
+    void handleLeftFileButton();
+    void handleRightFileButton();
+    void handleLeftFileSubmit();
+    void handleRightFileSubmit();
+
 private:
     Ui::MainWindow *ui;
 
+    const QString imageFileFilter = tr("Images (*.png *.xpm *.jpg *.tiff);; All Files (*)");
+
     const QString emptyMsg = "";
+    const QString emptyPathMsg  = tr("The path is empty.");
+    const QString imageInvalidMsg   = tr("The image could not be read.");
+    const QString unknownErrorMsg   = tr("An unknown error occurred");
 
     static const int layers = 6;
 
@@ -56,5 +66,8 @@ private:
     void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat combinedPyr[],
                          const int maskStartPercent=40, const int maskEndPercent=60);
     void reconstructImage(const int layers, const Mat pyr[], Mat &dst);
+
+    void setLeftErrorMessage(QString msg);
+    void setRightErrorMessage(QString msg);
 };
 #endif // MAINWINDOW_H

@@ -41,7 +41,7 @@
    <property name="layoutDirection">
     <enum>Qt::LeftToRight</enum>
    </property>
-   <widget class="QLabel" name="image1Label">
+   <widget class="QLabel" name="leftImageLabel">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -91,7 +91,7 @@
      <string>Reconstructed Image</string>
     </property>
    </widget>
-   <widget class="QLabel" name="image2Label">
+   <widget class="QLabel" name="rightImageLabel">
     <property name="geometry">
      <rect>
       <x>1084</x>
