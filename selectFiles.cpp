@@ -14,7 +14,7 @@ void MainWindow::handleLeftFileButton() {
 
     // Only attempt loading if a file was selected
     if (path != emptyMsg) {
-        ui->leftFIleText->setText(path);
+        ui->leftFileText->setText(path);
         handleLeftFileSubmit();
     }
 }
@@ -30,7 +30,7 @@ void MainWindow::handleRightFileButton() {
 
     // Only attempt loading if a file was selected
     if (path != emptyMsg) {
-        ui->rightFIleText->setText(path);
+        ui->rightFileText->setText(path);
         handleRightFileSubmit();
     }
 }
@@ -42,7 +42,7 @@ void MainWindow::handleRightFileButton() {
  */
 void MainWindow::handleLeftFileSubmit() {
     // Read string from text line
-    QString path = ui->leftFIleText->text();
+    QString path = ui->leftFileText->text();
 
     // Attempt loading an image, display error message if error
     switch (loadImage(leftImage, path)) {
@@ -64,7 +64,7 @@ void MainWindow::handleLeftFileSubmit() {
 
 }
 void MainWindow::handleRightFileSubmit() {
-    QString path = ui->rightFIleText->text();
+    QString path = ui->rightFileText->text();
 
     // Attempt loading an image, display error message if error
     switch (loadImage(rightImage, path)) {

@@ -16,8 +16,8 @@ MainWindow::MainWindow(QWidget *parent)
     const QString leftImagePath = ":/images/apple.jpg";
     const QString rightImagePath = ":/images/orange.jpg";
 
-    ui->leftFIleText->setText(leftImagePath);
-    ui->rightFIleText->setText(rightImagePath);
+    ui->leftFileText->setText(leftImagePath);
+    ui->rightFileText->setText(rightImagePath);
 
     loadImage(leftImage, leftImagePath);
     loadImage(rightImage, rightImagePath);
