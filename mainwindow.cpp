@@ -58,13 +58,58 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-/**
- * Displays the images in the UI
- */
 void MainWindow::displayImages() {
-    displayImage(ui->leftImageLabel, leftPyr.getResizedImage());
-    displayImage(ui->rightImageLabel, rightPyr.getResizedImage());
-    displayImage(ui->reconstructionLabel, combinedPyr.getResizedImage());
+
+    Size imSize = leftPyr.getSize();
+
+    // calculate display size of images
+    int width = imSize.width;
+    int height = imSize.height;
+
+    // if too small, make the image the largest possibls while
+    // still fitting in the dimensions
+    if (imSize.width < minDisplayDim.width &&
+            imSize.width < minDisplayDim.width) {
+
+        // If too small, make the image fit inside but barely
+        if (imSize.width < minDisplayDim.width) {
+            width = minDisplayDim.width;
+            height = imSize.height * minDisplayDim.width / imSize.width;
+        }
+
+        if (imSize.height > minDisplayDim.height) {
+            int w2 = imSize.width * minDisplayDim.height / imSize.height;
+            if (width > w2) {
+                width = w2;
+                height = minDisplayDim.height;
+            }
+        }
+    }
+    else {
+
+        // If too large, make the image fit inside
+        if (imSize.width > maxDisplayDim.width) {
+            width = maxDisplayDim.width;
+            height = imSize.height * maxDisplayDim.width / imSize.width;
+        }
+
+        if (imSize.height > maxDisplayDim.height) {
+            int w2 = imSize.width * maxDisplayDim.height / imSize.height;
+            if (width > w2) {
+                width = w2;
+                height = maxDisplayDim.height;
+            }
+        }
+    }
+
+    Size displaySize = Size(width, height);
+
+    // resize the UI components to fit the images if possible
+    resizeUI(displaySize);
+
+    displayImage(ui->leftImageLabel, leftPyr.getResizedImage(displaySize));
+    displayImage(ui->rightImageLabel, rightPyr.getResizedImage(displaySize));
+    displayImage(ui->reconstructionLabel, combinedPyr.getResizedImage(displaySize));
 }
 
 /**
@@ -163,3 +208,36 @@ void addMaskedLaplacian(const Mat left, const Mat right, const Mat leftMask, Mat
 
 }
 
+void MainWindow::resizeUI(Size imageDimensions) {
+    int width = max(imageDimensions.width, minDisplayDim.width);
+    int height = imageDimensions.height;
+
+    int windowWidth = 4*displayGap + 3*width;
+    int windowHeight = 3*displayGap + width + panelHeight;
+    // resize window
+    this->resize(windowWidth, windowHeight);
+    this->setMinimumWidth(windowWidth);
+    this->setMinimumHeight(windowHeight);
+    this->setMaximumWidth(windowWidth);
+    this->setMaximumHeight(windowHeight);
+
+    // Image Display Labels
+    ui->leftImageLabel->resize(width, height);
+    ui->reconstructionLabel->resize(width, height);
+    ui->rightImageLabel->resize(width, height);
+
+    ui->leftImageLabel->move(displayGap, displayGap);
+    ui->reconstructionLabel->move(2*displayGap + width, displayGap);
+    ui->rightImageLabel->move(3*displayGap + 2*width, displayGap);
+
+    // Resize slider panel
+    ui->sliders->resize(width, panelHeight);
+    ui->sliders->move(2*displayGap + width, 2 + displayGap + width);
+
+    // resize other panels
+    ui->leftFrame->resize(width, panelHeight);
+    ui->rightFrame->resize(width, panelHeight);
+
+    ui->leftFrame->move(displayGap, 2 + displayGap + width);
+    ui->rightFrame->move(3*displayGap + 2*width, 2 + displayGap + width);
+}

@@ -60,19 +60,23 @@ void MainWindow::submitLeftImage() {
     // Attempt loading an image, display error message if error
     switch (loadImage(leftImage, path)) {
     case 0:     // no error
+        setLeftErrorMessage(emptyMsg);
         break;
     case 1:     // empty path
         setLeftErrorMessage(emptyPathMsg);
         break;
     case 2:     // Could not read file
         setLeftErrorMessage(imageInvalidMsg);
-    default:    // unknown error
-        setLeftErrorMessage(unknownErrorMsg);
+    default:    // unknown error, probably invalid image
+        setLeftErrorMessage(imageInvalidMsg);
         break;
     }
 
     // set the image
     leftPyr.setImage(leftImage);
+
+    // set right image size
+    rightPyr.setSize(leftPyr.getSize());
 
     combineImages();
     displayImages();
@@ -86,6 +90,7 @@ void MainWindow::submitRightImage() {
     // Attempt loading an image, display error message if error
     switch (loadImage(rightImage, path)) {
     case 0:     // no error
+        setRightErrorMessage(emptyMsg);
         break;
     case 1:     // empty path
         setRightErrorMessage(emptyPathMsg);
@@ -97,8 +102,9 @@ void MainWindow::submitRightImage() {
         break;
     }
 
-    // set the image
-    rightPyr.setImage(rightImage);
+    // set the image without changing the size used
+    rightPyr.setImage(rightImage, false);
+
     combineImages();
     displayImages();
 }
@@ -119,12 +125,6 @@ void MainWindow::setRightErrorMessage(QString msg) {
     ui->rightErrorMessage->setText(msg);
 }
 
-/**
- * @brief MainWindow::loadImage
- * @param dst Mat to store the image in
- * @param path filepath of the image
- * @return 0 if no error, 1 for empty path, 2 for couldn't read image
- */
 int MainWindow::loadImage(Mat &dst, QString path) {
 
     if (path == emptyMsg) {
@@ -148,13 +148,7 @@ int MainWindow::loadImage(Mat &dst, QString path) {
         return 2;
     }
 
-    // Set dst image, resize if neccessary
-    if (image.rows == imageWidth && image.cols == imageHeight) {
-        dst = image.clone();
-    }
-    else {
-        cv::resize(image, dst, cv::Size(imageWidth, imageHeight), INTER_CUBIC);
-    }
+    dst = image.clone();
 
     return 0;
 }

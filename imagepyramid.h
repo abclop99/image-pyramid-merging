@@ -7,6 +7,8 @@
 
 #include <math.h>
 
+#include <iostream>
+
 using namespace cv;
 
 /**
@@ -60,6 +62,13 @@ public:
      * @return the resized version of the image
      */
     Mat getResizedImage() const {return resizedImage.clone();}
+    /**
+     * @brief getResizedImage gets a resized version of the
+     * image
+     * @param size size of image to get
+     * @return resized image
+     */
+    Mat getResizedImage(const Size &size) const;
     /**
      * @brief getSize changes the size of the image
      * @return the size of the image
@@ -125,8 +134,29 @@ public:
      * @return the maximum number of layers possible for the image
      * at the size used
      */
-    int maxLayers() const {
-        return (int) log2(min(getWidth(), getHeight()));
+    unsigned int maxLayers() const {
+
+        //return (int) log2(min(getWidth(), getHeight()));
+
+        // max number of times the dimensions are divisible by
+        // 2 and still and int
+
+        unsigned int n = 1; // 0th layer
+        int width = getWidth(), height = getHeight();
+
+        // another pyrDown is possible if
+        while (
+               (width % 2 == 0) && (height % 2 == 0) &&
+               (width >= 32) && (height >= 32)
+               ) {
+            width /= 2;
+            height /= 2;
+            n++;
+        }
+
+        // maximum layers possible without resizing?
+        return n;
+
     }
     /**
      * @brief getLayers gets the number of layers used
@@ -154,7 +184,9 @@ private:
     /**
      * @brief resizeImage sets resizedImage based on imageSize
      */
-    void resizeImage() {resize(image, resizedImage, imageSize, INTER_CUBIC);}
+    void resizeImage() {
+        resize(image, resizedImage, imageSize, INTER_CUBIC);
+    }
 
     /* Helpers for the pyramid */
     /**

@@ -100,7 +100,10 @@ int ImagePyramid::setLayers(int layers) {
 void ImagePyramid::generatePyramid() {
 
     // Save number of layers
-    unsigned int layers = getLayers();
+    // unsigned int layers = getLayers();
+
+    // Use the maximum number of layers always
+    unsigned int layers = maxLayers();
 
     // Start from scratch
     laplacianPyr.clear();
@@ -217,5 +220,15 @@ void ImagePyramid::reconstructImage() {
     // set image and resizedImage without using setters
     this->image = image.clone();
     this->resizedImage = image.clone();
+
+}
+
+Mat ImagePyramid::getResizedImage(const Size &size) const{
+
+    Mat img;
+
+    resize(image, img, size, INTER_CUBIC);
+
+    return img;
 
 }
