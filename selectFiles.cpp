@@ -3,6 +3,17 @@
 
 #include <iostream>
 
+void MainWindow::combineImages() {
+    combinedPyr = ImagePyramid(
+                leftPyr, rightPyr,
+                imageMask(
+                    leftPyr.getWidth(), leftPyr.getHeight(),
+                    ui->startSlider->value(),
+                    ui->endSlider->value()));
+
+    displayImages();
+}
+
 /**
  * @brief MainWindow::handleLeftFileButton
  * Shows a file dialog to select an image attempts to load it as the left image.
@@ -15,7 +26,7 @@ void MainWindow::handleLeftFileButton() {
     // Only attempt loading if a file was selected
     if (path != emptyMsg) {
         ui->leftFileText->setText(path);
-        handleLeftFileSubmit();
+        submitLeftImage();
     }
 }
 
@@ -31,7 +42,7 @@ void MainWindow::handleRightFileButton() {
     // Only attempt loading if a file was selected
     if (path != emptyMsg) {
         ui->rightFileText->setText(path);
-        handleRightFileSubmit();
+        submitRightImage();
     }
 }
 
@@ -40,9 +51,11 @@ void MainWindow::handleRightFileButton() {
  * Attempts to read an image from the path in the text line and
  * use it for merging with the right image.
  */
-void MainWindow::handleLeftFileSubmit() {
+void MainWindow::submitLeftImage() {
     // Read string from text line
     QString path = ui->leftFileText->text();
+
+    Mat leftImage;
 
     // Attempt loading an image, display error message if error
     switch (loadImage(leftImage, path)) {
@@ -58,13 +71,17 @@ void MainWindow::handleLeftFileSubmit() {
         break;
     }
 
-    // Do pyramid stuff again
-    laplacianPyr(layers, leftPyr, leftImage);
+    // set the image
+    leftPyr.setImage(leftImage);
+
     combineImages();
+    displayImages();
 
 }
-void MainWindow::handleRightFileSubmit() {
+void MainWindow::submitRightImage() {
     QString path = ui->rightFileText->text();
+
+    Mat rightImage;
 
     // Attempt loading an image, display error message if error
     switch (loadImage(rightImage, path)) {
@@ -80,9 +97,10 @@ void MainWindow::handleRightFileSubmit() {
         break;
     }
 
-    // Do pyramid stuff again
-    laplacianPyr(layers, rightPyr, rightImage);
+    // set the image
+    rightPyr.setImage(rightImage);
     combineImages();
+    displayImages();
 }
 
 /**

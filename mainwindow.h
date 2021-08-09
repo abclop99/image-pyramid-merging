@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 #include "ui_mainwindow.h"
+#include "imagepyramid.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -22,6 +23,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    // maximum dimensions for displaying the image
+    const Size maxDisplayDim = Size(600, 700);
+
     // Width and height used for images
     const int imageWidth = 512, imageHeight = 512;
 
@@ -30,8 +34,8 @@ private slots:
 
     void handleLeftFileButton();
     void handleRightFileButton();
-    void handleLeftFileSubmit();
-    void handleRightFileSubmit();
+    void submitLeftImage();
+    void submitRightImage();
 
 private:
     Ui::MainWindow *ui;
@@ -43,31 +47,25 @@ private:
     const QString imageInvalidMsg   = tr("The image could not be read.");
     const QString unknownErrorMsg   = tr("An unknown error occurred");
 
-    static const int layers = 6;
-
-    // Images
-    Mat leftImage, rightImage;
+    static const int initialLayers = 6;
 
     // Image Pyramids
-    Mat leftPyr[layers];
-    Mat rightPyr[layers];
-    Mat combinedPyr[layers];
-
-    // reconstructed image
-    Mat reconstruction;
+    ImagePyramid leftPyr;
+    ImagePyramid rightPyr;
+    ImagePyramid combinedPyr;
 
     int loadImage(Mat &dst, QString path);
 
     void displayImage(QLabel *label, Mat img);
     void displayImages();
 
-    // Pyramid related functions
-    void laplacianPyr(const int layers, Mat pyr[], const cv::Mat image);
-    void combinePyramids(const int layers, const Mat leftPyr[], const Mat rightPyr[], Mat combinedPyr[],
-                         const int maskStartPercent=40, const int maskEndPercent=60);
-    void reconstructImage(const int layers, const Mat pyr[], Mat &dst);
-
     void setLeftErrorMessage(QString msg);
     void setRightErrorMessage(QString msg);
+
+    static Mat imageMask(
+            int rows, int cols,
+            int startPercent, int endPercent
+            );
+
 };
 #endif // MAINWINDOW_H
