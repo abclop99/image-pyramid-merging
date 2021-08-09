@@ -110,6 +110,9 @@ void MainWindow::displayImages() {
     displayImage(ui->leftImageLabel, leftPyr.getResizedImage(displaySize));
     displayImage(ui->rightImageLabel, rightPyr.getResizedImage(displaySize));
     displayImage(ui->reconstructionLabel, combinedPyr.getResizedImage(displaySize));
+
+    // status bar
+    ui->statusbar->showMessage("Layers Used: " + QString::number(combinedPyr.getLayers()));
 }
 
 /**
