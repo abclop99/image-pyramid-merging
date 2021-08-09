@@ -7,7 +7,7 @@ ImagePyramid::ImagePyramid(const Mat &src, const Size &size) :
 }
 
 ImagePyramid::ImagePyramid(const Mat &src) {
-    setImage(src);
+    setImage(src, true, false);
 }
 
 ImagePyramid::ImagePyramid(
@@ -38,7 +38,8 @@ ImagePyramid::ImagePyramid(
     reconstructImage();
 }
 
-int ImagePyramid::setImage(const Mat &src, bool keepSize) {
+int ImagePyramid::setImage(const Mat &src, bool keepSize,
+                           bool generatePyr) {
     if (src.empty()) {
         return 1;   // error
     }
@@ -48,26 +49,30 @@ int ImagePyramid::setImage(const Mat &src, bool keepSize) {
         // if keepsize, use src's size, otherwise, keep current
         // size and resize
         if (keepSize) {
-            setSize(image.size());
+            setSize(image.size(), false);
         }
         else {
             resizeImage();
         }
 
         // generates Laplacian pyramid
-        generatePyramid();
+        if (generatePyr) {
+            generatePyramid();
+        }
         return 0;
     }
 }
 
-int ImagePyramid::setSize (const Size &size) {
+int ImagePyramid::setSize (const Size &size, bool generatePyr) {
     if (size.height <= 0 || size.width <= 0) {
         return 1;   // error
     }
     else {
         this->imageSize = size;
         resizeImage();
-        generatePyramid();  // generates Laplacian pyramid
+        if (generatePyr) {
+            generatePyramid();  // generates Laplacian pyramid
+        }
         return 0;
     }
 }

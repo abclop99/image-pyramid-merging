@@ -31,7 +31,10 @@ public:
      * @param src the image
      */
     ImagePyramid(const Mat &src);
-
+    /**
+     * @brief ImagePyramid default constructor for default
+     * constructor purposes.
+     */
     ImagePyramid() {imageSize = Size(512, 512);}
 
     /**
@@ -92,16 +95,18 @@ public:
      * @param img the image to set
      * @param resize if true, use the image's size, if false,
      * use the current size. Default is true.
+     * @param generatePyr whether to gernerate the image pyramid
      * @return 0 if no error
      */
-    int setImage(const Mat &src, bool keepSize=true);
+    int setImage(const Mat &src, bool keepSize=true,
+                 bool generatePyr=true);
     /**
      * @brief setSize changes the size of the image and generates
      * the Laplacian pyramid
      * @param size the size to use for the image;
      * @return 0 if no error
      */
-    int setSize (const Size &size);
+    int setSize (const Size &size, bool generatePyr=true);
     /**
      * @brief setSize changes the size of the image and generates
      * the Laplacian pyramid. This function is an overload of
@@ -110,7 +115,8 @@ public:
      * @param height height to use for the image
      * @return 0 if no error
      */
-    int setSize (int width, int height) {return setSize(Size(width, height));}
+    int setSize (int width, int height, bool generatePyr=true)
+    {return setSize(Size(width, height), generatePyr);}
 
     /**
      * @brief getLaplacian gets the specified layer of the
