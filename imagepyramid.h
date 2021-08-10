@@ -98,15 +98,14 @@ public:
      * @param generatePyr whether to gernerate the image pyramid
      * @return 0 if no error
      */
-    int setImage(const Mat &src, bool keepSize=true,
-                 bool generatePyr=true);
+    int setImage(const Mat &src, bool keepSize=true);
     /**
      * @brief setSize changes the size of the image and generates
      * the Laplacian pyramid
      * @param size the size to use for the image;
      * @return 0 if no error
      */
-    int setSize (const Size &size, bool generatePyr=true);
+    int setSize (const Size &size);
     /**
      * @brief setSize changes the size of the image and generates
      * the Laplacian pyramid. This function is an overload of
@@ -115,8 +114,8 @@ public:
      * @param height height to use for the image
      * @return 0 if no error
      */
-    int setSize (int width, int height, bool generatePyr=true)
-    {return setSize(Size(width, height), generatePyr);}
+    int setSize (int width, int height)
+    {return setSize(Size(width, height));}
 
     /**
      * @brief getLaplacian gets the specified layer of the
@@ -192,6 +191,7 @@ private:
      */
     void resizeImage() {
         resize(image, resizedImage, imageSize, INTER_CUBIC);
+        generatePyramid();
     }
 
     /* Helpers for the pyramid */

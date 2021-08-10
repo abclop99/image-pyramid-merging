@@ -7,7 +7,7 @@ ImagePyramid::ImagePyramid(const Mat &src, const Size &size) :
 }
 
 ImagePyramid::ImagePyramid(const Mat &src) {
-    setImage(src, true, false);
+    setImage(src, true);
 }
 
 ImagePyramid::ImagePyramid(
@@ -16,15 +16,20 @@ ImagePyramid::ImagePyramid(
         const Mat &src1Mask
         ) {
 
+    assert(src1Mask.cols == src1.getWidth() && src1Mask.rows == src1.getHeight());
+
     Mat mask = src1Mask.clone();  // so it can be modified
 
     //combine pyramids
     for (int layer = 0; layer < src1.getLayers(); layer++) {
 
+        Mat src1Lap = src1.getLaplacian(layer);
+        Mat src2Lap = src2.getLaplacian(layer);
+
         laplacianPyr.push_back(
                     addMaskedLaplacian(
-                        src1.getLaplacian(layer),
-                        src2.getLaplacian(layer),
+                        src1Lap,
+                        src2Lap,
                         mask
                         )
                     );
@@ -38,41 +43,39 @@ ImagePyramid::ImagePyramid(
     reconstructImage();
 }
 
-int ImagePyramid::setImage(const Mat &src, bool keepSize,
-                           bool generatePyr) {
+int ImagePyramid::setImage(const Mat &src, bool keepSize) {
     if (src.empty()) {
         return 1;   // error
     }
     else {
         src.copyTo(image);
 
-        // if keepsize, use src's size, otherwise, keep current
-        // size and resize
+        // keepsize = slightly change to add more layers
+        // otherwise, use current size and resize
         if (keepSize) {
-            setSize(image.size(), false);
+            int width = image.cols;
+            int height = image.rows;
+
+            if (width % 2 == 1) width--;
+            if (height % 2 == 1) height--;
+            setSize(width, height);
         }
         else {
             resizeImage();
         }
 
-        // generates Laplacian pyramid
-        if (generatePyr) {
-            generatePyramid();
-        }
         return 0;
     }
 }
 
-int ImagePyramid::setSize (const Size &size, bool generatePyr) {
+int ImagePyramid::setSize (const Size &size) {
     if (size.height <= 0 || size.width <= 0) {
         return 1;   // error
     }
     else {
         this->imageSize = size;
         resizeImage();
-        if (generatePyr) {
-            generatePyramid();  // generates Laplacian pyramid
-        }
+        generatePyramid();  // generates Laplacian pyramid
         return 0;
     }
 }
@@ -161,6 +164,10 @@ Mat ImagePyramid::addMaskedLaplacian(
         const Mat &src1, const Mat &src2,
         const Mat &src1Mask) const {
 
+    assert(!src1.empty() && !src2.empty() && !src1Mask.empty());
+    assert(src1.rows == src2.rows && src1.cols == src2.cols);
+    assert(src1Mask.rows == src1.rows && src1Mask.cols == src1.cols);
+
     Mat combined;
 
     // assert left and right are same size
@@ -176,9 +183,10 @@ Mat ImagePyramid::addMaskedLaplacian(
 
     for (int col = 0; col < src1.cols; col++) {
         for (int row = 0; row < src1.rows; row++) {
+            int p = (row * (col+1) + col);
 
             // mask values
-            float leftMaskValue = src1Mask.at<float>(row, col);
+            float leftMaskValue = src1Mask.at<float>(row, col); // Error here
             float rightMaskValue = 1 - leftMaskValue;
 
             // colors of source images

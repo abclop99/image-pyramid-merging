@@ -4,6 +4,7 @@
 #include <iostream>
 
 void MainWindow::combineImages() {
+
     combinedPyr = ImagePyramid(
                 leftPyr, rightPyr,
                 imageMask(
@@ -148,7 +149,9 @@ int MainWindow::loadImage(Mat &dst, QString path) {
         return 2;
     }
 
-    dst = image.clone();
+    //
+
+    image.convertTo(dst, CV_8U);
 
     return 0;
 }

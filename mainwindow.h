@@ -106,7 +106,7 @@ private:
      * @return the mask
      */
     static Mat imageMask(
-            int rows, int cols,
+            int width, int height,
             int startPercent, int endPercent
             );
 
